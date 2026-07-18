@@ -11,6 +11,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.rapaio.jupyter.kernel.channels.Channels;
+import org.rapaio.jupyter.kernel.channels.IpcProxy;
 import org.rapaio.jupyter.kernel.core.ConnectionProperties;
 import org.rapaio.jupyter.kernel.core.RapaioKernel;
 import org.rapaio.jupyter.kernel.core.Transform;
@@ -52,9 +53,14 @@ public class MainApp {
         ConnectionProperties connProps = Transform.fromJson(contents, ConnectionProperties.class);
         LOGGER.info("Kernel connection file content: " + contents);
 
-        if(IPC_TRANSPORT.equals(connProps.transport())) {
-            // we should create a proxy for ipc
-            LOGGER.severe("ipc protocol is not supported.");
+        if (IPC_TRANSPORT.equals(connProps.transport())) {
+            // ZMQ ipc transport is not supported by JeroMQ, so we bind unix domain sockets
+            // ourselves and pump bytes to loopback tcp ports where the kernel sockets bind
+            LOGGER.info("ipc transport detected, starting unix domain socket proxy.");
+            IpcProxy ipcProxy = new IpcProxy(connProps);
+            connProps = ipcProxy.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(ipcProxy::close, "ipc-proxy-shutdown"));
+            LOGGER.info("ipc proxy started, kernel channels bind on: " + Transform.toJson(connProps));
         }
 
         Channels channels = new Channels(connProps);

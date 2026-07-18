@@ -72,6 +72,11 @@
               <transformers>
                 <transformer />
                 <transformer>
+                  <resource>META-INF/sisu/javax.inject.Named</resource>
+                </transformer>
+                <transformer />
+                <transformer />
+                <transformer>
                   <mainClass>org.rapaio.jupyter.kernel.MainApp</mainClass>
                 </transformer>
               </transformers>
@@ -88,6 +93,8 @@
                 <exclude>META-INF/*.SF</exclude>
                 <exclude>META-INF/*.DSA</exclude>
                 <exclude>META-INF/*.RSA</exclude>
+                <exclude>module-info.class</exclude>
+                <exclude>META-INF/versions/*/module-info.class</exclude>
               </excludes>
             </filter>
           </filters>
